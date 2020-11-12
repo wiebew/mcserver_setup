@@ -2,6 +2,5 @@
   become: true
   tasks:
   - name: Install htop
-    apt: 
-      name: htop
-      state: present
+    apt: name=htop
+      

@@ -1,0 +1,18 @@
+---
+- name: Setup Minecraft Server with RCON on bare metal ubunutu machine
+  hosts: localhost
+  become: yes
+  gather_facts: False #disabled initially, until we have ensured python is installed
+  pre_tasks:
+    - name: Check for Python
+      raw: test -e /usr/bin/python 
+      changed_when: false
+      failed_when: false
+      register: check_python
+
+    - name: Install Python
+      raw: apt -y update && apt install -y python
+      when: check_python.rc != 0      
+    - setup: #this will do a gather_facts so variables are set for the roles
+  roles:
+    -  minecraft

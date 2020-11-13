@@ -1,0 +1,4 @@
+[Minecraft]
+title=Minecraft JavaEdition Server
+description=Minecraft is a sandbox video game released by Mojang
+ports=25565,25575/tcp|25565/udp

@@ -1,12 +1,139 @@
 ---
+- name: upgrade packages
+  apt: 
+    update_cache: yes
+    upgrade: yes
+
 - name: Install packages
   apt: 
-    name: ['htop', 'golang', 'openjdk-8-jre-headless']
+    name: ['htop', 'golang', 'openjdk-8-jre-headless', 'git', 'build-essential', 'zfsutils-linux']
     state: present
 
-- name: Install lastpass
-  apt: 
-    name: [ 'bash-completion', 'build-essential', 'cmake', 'libcurl3-openssl-dev', 'libssl-dev', 'libxml2', 'libxml2-dev', 'pkg-config', 'ca-certificates', 'xclip']       
+
+- name: Add RSA key to the remote host for the admin user
+  authorized_key: user='{{ admin_user_name }}' key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- name: Allow only pubkey login to SSH
+  lineinfile: "dest=/etc/ssh/sshd_config state=present regexp='PasswordAuthentication' line='PasswordAuthentication yes'"
+
+- name: Allow SSH in Firewall
+  community.general.ufw:
+    rule: allow
+    name: openSSH
+
+- name: install minecraft ufw profile
+  copy: src=minecraft dest='/etc/ufw/applications.d/minecraft' mode='644' owner='root' group='root'
+
+- name: Allow Minecraft in Firewall
+  community.general.ufw:
+    rule: allow
+    name: Minecraft
+
+- name: Update .profile of admin
+  template: 
+    src: files/.profile 
+    dest: '/home/{{ admin_user_name }}/.profile'
+    mode: '644' 
+    owner: '{{ admin_user_name }}' 
+    group: '{{ admin_user_name }}'  
+
+- name: Create Minecraft user
+  user:
+    name: '{{ minecraft_user }}'
+    comment: Minecraft account
+    home: '{{ minecraft_home }}'
+    shell: /bin/bash
+    system: true
+    create_home: true
+
+- name: Create Directories for minecraft
+  file:
+    path: '{{ minecraft_home }}/{{ item }}'
+    state: directory
+    group: '{{ minecraft_user }}'
+    owner: '{{ minecraft_user }}'
+  with_items:
+    - backups
+    - tools
+    - server
+    - tools/papermc
+
+- name: clone RCON repo
+  git:
+    clone: yes
+    repo: 'https://github.com/Tiiffi/mcrcon.git'
+    dest: '{{ minecraft_home }}/tools/mcrcon'
+  become_user: '{{ minecraft_user }}'
+
+- name: create RCON binary
+  become_user: '{{ minecraft_user }}'
+  command: "gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o mcrcon mcrcon.c"
+  args:
+    chdir: '{{ minecraft_home }}/tools/mcrcon'
+    creates: mcrcon
+
+- name: Download papermc
+  get_url:
+    url: '{{ papermc_url_prefix }}/{{ papermc_build }}/download'
+    dest: '{{ minecraft_home }}/tools/papermc/papermc_{{ papermc_build }}.jar'
+    mode: '0664'
+
+- name: Create symlink for minecraft
+  file:
+    state: link
+    src: '{{ minecraft_home }}/tools/papermc/papermc_{{ papermc_build }}.jar'
+    dest: '{{ minecraft_home }}/server/server.jar'
+    group: '{{ minecraft_user }}'
+    owner: '{{ minecraft_user }}'
+
+- name: Start minecraft to create eula.txt
+  become_user: '{{ minecraft_user }}'
+  command: "java -jar minecraft.jar"
+  args:
+    chdir: '{{ minecraft_home }}/server'
+    creates: '{{ minecraft_home }}/server/eula.txt'
+
+- name: Update minecraft eula 
+  lineinfile: "dest='{{ minecraft_home }}/server/eula.txt' state=present regexp='eula' line='eula=true'"
+
+- name: set rcon password
+  lineinfile: "dest='{{ minecraft_home }}/server/server.properties' state=present regexp='rcon.password' line='rcon.password={{ lookup('password', '/tmp/rconpasswordfile chars=ascii_letters,digits')}}'"
+
+- name: enable rcon listener
+  lineinfile: "dest='{{ minecraft_home }}/server/server.properties' state=present regexp='enable-rcon' line='enable-rcon=true'"
+
+- name: install minecraft service
+  template: 
+    src: files/minecraft.service 
+    dest: /etc/systemd/system/minecraft.service 
+    mode: '644' 
+    owner: 'root' 
+    group: 'root'  
+
+- name: Restart minecraft
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: minecraft
+    enabled: yes
+
+- name: create minecraft backup script
+  template: 
+    src: files/backup.sh 
+    dest: '{{ minecraft_home }}/tools/backup.sh'
+    mode: '755' 
+    owner: '{{ minecraft_user }}' 
+    group: '{{ minecraft_user }}'  
+
+- name: schedule daily backups
+  cron:
+    name: "Backup minecraft"
+    hour: "2"
+    job: '{{ minecraft_home }}/tools/backup.sh'
+    user: '{{ minecraft_user }}'
     state: present
 
-      
+- name: Switch on Firewall
+  community.general.ufw:
+    state: enabled
+

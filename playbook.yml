@@ -1,6 +1,6 @@
 ---
 - name: Setup Minecraft Server with RCON on bare metal ubunutu machine
-  hosts: localhost
+  hosts: all
   become: yes
   gather_facts: False #disabled initially, until we have ensured python is installed
   pre_tasks:
@@ -16,3 +16,5 @@
     - setup: #this will do a gather_facts so variables are set for the roles
   roles:
     -  minecraft
+  vars_files:
+    - vars.yml 

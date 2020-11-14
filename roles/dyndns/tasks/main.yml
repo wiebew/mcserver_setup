@@ -1,0 +1,23 @@
+---
+- name: clone dyndns_transip repo
+  git:
+    clone: yes
+    repo: 'https://github.com/wiebew/dyndns-transip.git'
+    dest: '/home/{{ admin_user_name }}/projects/dyndns-transip'
+  become_user: '{{ admin_user_name }}'
+
+- name: Build dyndns_transip
+  become_user: '{{ admin_user_name }}'
+  shell: '.  /home/{{ admin_user_name }}/.profile && go get && go build'
+  args:
+    chdir: '/home/{{ admin_user_name }}/projects/dyndns-transip'
+    creates: '/home/{{ admin_user_name }}/projects/dyndns-transip/dyndns-transip'
+
+- name: Copy transip key
+  copy:
+    src: '~/.ssh/transip.key'
+    dest: '/home/{{ admin_user_name }}/.ssh/transip.key'
+    owner: '{{ admin_user_name }}'
+    group: '{{ admin_user_name }}'
+    mode: '0600'
+

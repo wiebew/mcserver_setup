@@ -1,4 +1,6 @@
 ---
+  domain_name: adfero.nl
+  host_name: freenas
   minecraft_home: "/opt/minecraft"
   minecraft_user: "minecraft"
   papermc_build: 276

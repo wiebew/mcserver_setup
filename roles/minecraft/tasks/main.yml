@@ -9,7 +9,6 @@
     name: ['htop', 'golang', 'openjdk-8-jre-headless', 'git', 'build-essential', 'zfsutils-linux']
     state: present
 
-
 - name: Add RSA key to the remote host for the admin user
   authorized_key: user='{{ admin_user_name }}' key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
 

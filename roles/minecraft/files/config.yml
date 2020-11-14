@@ -1,0 +1,7 @@
+# dyndns_transip.config
+domain: adfero.nl
+server: freenas
+privatekeypath: "/home/{{ admin_user_name= }}/.ssh/transip.key"
+accountname: archigogo
+timetolive: 300
+logfile: "./dyndns-transip.log"

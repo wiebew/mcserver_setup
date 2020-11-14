@@ -1,0 +1,8 @@
+---
+  domain_name: mydomain.com
+  host_name: awesome_host
+  minecraft_home: "/opt/minecraft"
+  minecraft_user: "minecraft"
+  papermc_build: 276
+  papermc_url_prefix: "https://papermc.io/api/v1/paper/1.16.4"
+  minecraft_max_memory: 5000M

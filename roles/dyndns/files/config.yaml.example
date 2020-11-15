@@ -1,0 +1,7 @@
+# dyndns_transip.config
+domain: yourawesomedomain.com
+server: onlytheservername
+privatekeypath: "/home/{{ admin_user_name }}/.ssh/transip.key"
+accountname: your_transip_account
+timetolive: 300
+logfile: "./dyndns-transip.log"

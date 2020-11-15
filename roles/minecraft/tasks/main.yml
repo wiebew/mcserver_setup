@@ -127,6 +127,7 @@
 - name: schedule daily backups
   cron:
     name: "Backup minecraft"
+    minute: "0"
     hour: "2"
     job: '{{ minecraft_home }}/tools/backup.sh'
     user: '{{ minecraft_user }}'

@@ -1,0 +1,28 @@
+---
+- name: Install packages
+  apt: 
+    name: ['netatalk']
+    state: present
+
+- name: Update afp.conf
+  template: 
+    src: files/afp.conf 
+    dest: '/etc/netatalk/afp.conf'
+    mode: '644' 
+    owner: 'root' 
+    group: 'root'  
+
+- name: Restart netatalk
+  systemd:
+    name: netatalk
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+
+- name: Open ports for timemachine
+  community.general.ufw:
+    rule: allow
+    port: '{{ item }}'
+  loop:
+    - 548
+    - 427

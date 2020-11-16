@@ -17,5 +17,6 @@
   roles:
     -  minecraft
     -  dyndns
+    - timemachine
   vars_files:
     - vars.yml 

@@ -1,3 +1,4 @@
 hosts
 vars.yml
 **/config.yaml
+**/afp.conf

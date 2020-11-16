@@ -1,0 +1,17 @@
+;
+; Netatalk 3.x configuration file
+;
+
+[Global]
+; Global server settings
+
+; [Homes]
+; basedir regex = /xxxx
+
+; [My AFP Volume]
+; path = /path/to/volume
+
+[Backup name]
+path = /mnt/pathtotimemachinefolder
+time machine = yes
+vol size limit = limit in MiB
